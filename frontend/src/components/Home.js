@@ -1,29 +1,62 @@
 import React, {useMemo} from 'react'
-import {useTable, useSortBy} from 'react-table'
+import {useTable, usePagination, useSortBy, useGlobalFilter} from 'react-table'
 import { Switch } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import './Home.css';
 import Data from './data.json';
 import {Columns} from './Columns';
+import './Home.css';
+import SearchTable from './SearchTable'
 
 const feeds = Data.feeds;
 
+
+const IndeterminateCheckbox = React.forwardRef(
+  ({ indeterminate, ...rest }, ref) => {
+    const defaultRef = React.useRef()
+    const resolvedRef = ref || defaultRef
+
+    React.useEffect(() => {
+      resolvedRef.current.indeterminate = indeterminate
+    }, [resolvedRef, indeterminate])
+
+    return <input type="checkbox" ref={resolvedRef} {...rest} />
+  }
+)
+
 export const Home = () => {
+
     const columns = useMemo(() => Columns, []);
     const data = useMemo(() => feeds, []);
 
     const tableInstance = useTable({
         columns,
-        data
-    },useSortBy)
+        data,
+        initialState: { pageIndex: 2 },
+    }, useGlobalFilter,useSortBy,usePagination)
+
     const {
         getTableProps,
         getTableBodyProps,
         headerGroups,
-        rows,
         prepareRow,
+        page, // Instead of using 'rows', we'll use page -  which has only the rows for the active page
+        // The rest of these things are super handy, too ;)
+        canPreviousPage,
+        canNextPage,
+        pageOptions,
+        pageCount,
+        gotoPage,
+        nextPage,
+        previousPage,
+        setPageSize,
+        setGlobalFilter,
+        state,
+        allColumns,
+        getToggleHideAllColumnsProps,
     } = tableInstance;
+
+    const { globalFilter, pageIndex, pageSize } = state;
 
     return (
         <div className="home-container">
@@ -64,7 +97,22 @@ export const Home = () => {
                     <SearchIcon className="search-icon"/>
                 </div>
             </div>
-
+            <div>
+                <div>
+                <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} /> Toggle
+                All
+                </div>
+                {allColumns.map(column => (
+                <div key={column.id}>
+                    <label>
+                    <input type="checkbox" {...column.getToggleHiddenProps()} />{' '}
+                    {column.id}
+                    </label>
+                </div>
+                ))}
+                <br />
+            </div>
+            <SearchTable filter={globalFilter} setFilter={setGlobalFilter}/>
             <table {...getTableProps()}>
                 <thead>
                 {// Loop over the header rows
@@ -76,14 +124,14 @@ export const Home = () => {
                         // Apply the header cell props
                         <th {...column.getHeaderProps(column.getSortByToggleProps())}>
                         {// Render the header
-                        column.render('Header')}
-                        <span>
-                        {column.isSorted
-                            ? column.isSortedDesc
-                                ? ' 🔽'
-                                : ' 🔼'
-                            : ''}
-                        </span>
+                            column.render('Header')}
+                            <span>
+                            {column.isSorted
+                                ? column.isSortedDesc
+                                    ? ' 🔽'
+                                    : ' 🔼'
+                                : ''}
+                            </span>
                         </th>
                     ))}
                     </tr>
@@ -92,7 +140,7 @@ export const Home = () => {
                 {/* Apply the table body props */}
                 <tbody {...getTableBodyProps()}>
                 {// Loop over the table rows
-                rows.map(row => {
+                    page.map(row => {
                     // Prepare the row for display
                     prepareRow(row)
                     return (
@@ -113,6 +161,26 @@ export const Home = () => {
                 })}
                 </tbody>
             </table>
+        < div className="pagination">
+            <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+            {'<<'}
+            </button>{' '}
+            <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+            {'<'}
+            </button>{' '}
+            <button onClick={() => nextPage()} disabled={!canNextPage}>
+            {'>'}
+            </button>{' '}
+            <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+            {'>>'}
+            </button>{' '}
+            <span>
+            Page{' '}
+            <strong>
+                {pageIndex + 1} of {pageOptions.length}
+            </strong>{' '}
+            </span>
+        </div>
             
         </div>
     )

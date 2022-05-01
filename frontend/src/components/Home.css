@@ -49,6 +49,11 @@
 
 }
 
+table {
+    border-spacing: 0;
+    
+}
+
 table thead {
     background-color: rgb(0, 225, 255);
 }
