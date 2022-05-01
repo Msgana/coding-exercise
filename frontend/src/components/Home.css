@@ -1,6 +1,7 @@
 .product-view-mode {
     display: flex;
     justify-content: space-between;
+    align-items: center;
 }
 .product-view-mode .product-view-mode-left{
      display: flex;
@@ -48,6 +49,6 @@
 
 }
 
-.data-table {
-   background-color: beige;
+table thead {
+    background-color: rgb(0, 225, 255);
 }

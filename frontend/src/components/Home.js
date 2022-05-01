@@ -1,14 +1,30 @@
-import React from 'react'
-// import "bootstrap/dist/css/bootstrap.min.css";
+import React, {useMemo} from 'react'
+import {useTable, useSortBy} from 'react-table'
 import { Switch } from '@mui/material';
 import SearchIcon from '@mui/icons-material/Search';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import { TableSortLabel } from '@mui/material';
 import './Home.css';
+import Data from './data.json';
+import {Columns} from './Columns';
 
+const feeds = Data.feeds;
 
 export const Home = () => {
-    
+    const columns = useMemo(() => Columns, []);
+    const data = useMemo(() => feeds, []);
+
+    const tableInstance = useTable({
+        columns,
+        data
+    },useSortBy)
+    const {
+        getTableProps,
+        getTableBodyProps,
+        headerGroups,
+        rows,
+        prepareRow,
+    } = tableInstance;
+
     return (
         <div className="home-container">
             <div className='header-title'>
@@ -32,10 +48,9 @@ export const Home = () => {
                 <h5>Yes</h5>
             </div> 
             <div className='results-display'>
-                <h5>Displaying 537 results</h5>
+                <h5>Displaying 535 results</h5>
                 <button>Reset Filters</button>
             </div>
-
             <div className='column-selection-search'>
                 <div className='column-selection'>
                     <button>Show all columns</button>
@@ -49,9 +64,57 @@ export const Home = () => {
                     <SearchIcon className="search-icon"/>
                 </div>
             </div>
-            <div className="data-table">
-                <h2>Table here!</h2>
-            </div>
+
+            <table {...getTableProps()}>
+                <thead>
+                {// Loop over the header rows
+                headerGroups.map(headerGroup => (
+                    // Apply the header row props
+                    <tr {...headerGroup.getHeaderGroupProps()}>
+                    {// Loop over the headers in each row
+                    headerGroup.headers.map(column => (
+                        // Apply the header cell props
+                        <th {...column.getHeaderProps(column.getSortByToggleProps())}>
+                        {// Render the header
+                        column.render('Header')}
+                        <span>
+                        {column.isSorted
+                            ? column.isSortedDesc
+                                ? ' 🔽'
+                                : ' 🔼'
+                            : ''}
+                        </span>
+                        </th>
+                    ))}
+                    </tr>
+                ))}
+                </thead>
+                {/* Apply the table body props */}
+                <tbody {...getTableBodyProps()}>
+                {// Loop over the table rows
+                rows.map(row => {
+                    // Prepare the row for display
+                    prepareRow(row)
+                    return (
+                    // Apply the row props
+                    <tr {...row.getRowProps()}>
+                        {// Loop over the rows cells
+                        row.cells.map(cell => {
+                        // Apply the cell props
+                        return (
+                            <td {...cell.getCellProps()}>
+                            {// Render the cell contents
+                            cell.render('Cell')}
+                            </td>
+                        )
+                        })}
+                    </tr>
+                    )
+                })}
+                </tbody>
+            </table>
+            
         </div>
     )
 }
+
