@@ -1,38 +1,46 @@
-import React, {useMemo} from 'react'
+import React, {useState, useEffect, useMemo} from 'react'
 import {useTable, usePagination, useSortBy, useGlobalFilter} from 'react-table'
 import { Switch } from '@mui/material';
-import SearchIcon from '@mui/icons-material/Search';
 import ArrowDropDownIcon from '@mui/icons-material/ArrowDropDown';
-import Data from './data.json';
 import {Columns} from './Columns';
 import './Home.css';
 import SearchTable from './SearchTable'
+import axios from 'axios'
 
-const feeds = Data.feeds;
-
-
-const IndeterminateCheckbox = React.forwardRef(
-  ({ indeterminate, ...rest }, ref) => {
-    const defaultRef = React.useRef()
-    const resolvedRef = ref || defaultRef
-
-    React.useEffect(() => {
-      resolvedRef.current.indeterminate = indeterminate
-    }, [resolvedRef, indeterminate])
-
-    return <input type="checkbox" ref={resolvedRef} {...rest} />
-  }
-)
 
 export const Home = () => {
+    const [records, setRecords] = useState([]);
+    const [loading, setLoading] = useState(true);
+    const [paginate, setPaginate] = useState(false);
+    const [showPagination, setShowPagination] = useState(false);
+    
+    async function getData(){
+		await axios.get(`http://localhost:3001/`)
+			.then(response => { 
+                setRecords(response.data)
+                setLoading(false);
+			})
+			.catch(error => {
+				alert('Axios GET request failed', error);
+			})
+	}
 
-    const columns = useMemo(() => Columns, []);
-    const data = useMemo(() => feeds, []);
+    function handlePagination(event){
+        setPaginate(event.target.checked);
+        setShowPagination(event.target.checked);
+    }
+	
+    useEffect(()=>{
+		getData();
+	},[]);
+
+	const columns = useMemo(() => Columns, []);
+    const data = useMemo(() => records, [records]);
 
     const tableInstance = useTable({
         columns,
         data,
-        initialState: { pageIndex: 2 },
+        initialState: { pageIndex: 0, pageSize: 5 },
     }, useGlobalFilter,useSortBy,usePagination)
 
     const {
@@ -40,8 +48,8 @@ export const Home = () => {
         getTableBodyProps,
         headerGroups,
         prepareRow,
-        page, // Instead of using 'rows', we'll use page -  which has only the rows for the active page
-        // The rest of these things are super handy, too ;)
+        page, 
+        rows,
         canPreviousPage,
         canNextPage,
         pageOptions,
@@ -49,14 +57,12 @@ export const Home = () => {
         gotoPage,
         nextPage,
         previousPage,
-        setPageSize,
         setGlobalFilter,
         state,
-        allColumns,
-        getToggleHideAllColumnsProps,
+        allColumns
     } = tableInstance;
 
-    const { globalFilter, pageIndex, pageSize } = state;
+    const { globalFilter, pageIndex } = state;
 
     return (
         <div className="home-container">
@@ -77,43 +83,46 @@ export const Home = () => {
             <div className='pagination'>
                 <h5>Pagination</h5>
                 <h5>No</h5>
-                <Switch className='pagination-toggle' size='small' />
+                <Switch className='pagination-toggle' size='small' checked={paginate
+                } onChange={handlePagination}/>
                 <h5>Yes</h5>
             </div> 
             <div className='results-display'>
-                <h5>Displaying 535 results</h5>
+                <h5>Displaying {records.length} results</h5>
                 <button>Reset Filters</button>
             </div>
             <div className='column-selection-search'>
                 <div className='column-selection'>
-                    <button>Show all columns</button>
                     <div className="dropdown-check-list">
-                        <span className="text">6 of 6 selected</span>
-                        <ArrowDropDownIcon />
+                        <div className='dropdown'>
+                            <div className='dropdown-item-1'>
+                                <button> Show all columns</button>
+                            </div>
+                            <span className='dropdown-item-2' >
+                                {allColumns.map(column => (
+                                <div key={column.id}>
+                                    <label>
+                                        <input type="checkbox" {...column.getToggleHiddenProps()} />{' '}
+                                        {column.id}
+                                    </label>
+                                </div>
+                                ))}
+                            </span>
+                            <br />
+                        </div>
+                        <div className="text-icon">
+                            <h5>6 of 6 selected </h5>
+                            <ArrowDropDownIcon className='dropdown-icon' />
+                        </div>
+                        
                     </div>
                 </div>
-                <div className='search-box'>
-                    <input type="text" id="fname" placeholder="Search over entire chart"></input>
-                    <SearchIcon className="search-icon"/>
-                </div>
+                <SearchTable className="search-icon"filter={globalFilter} setFilter={setGlobalFilter}/>
             </div>
-            <div>
-                <div>
-                <IndeterminateCheckbox {...getToggleHideAllColumnsProps()} /> Toggle
-                All
-                </div>
-                {allColumns.map(column => (
-                <div key={column.id}>
-                    <label>
-                    <input type="checkbox" {...column.getToggleHiddenProps()} />{' '}
-                    {column.id}
-                    </label>
-                </div>
-                ))}
-                <br />
-            </div>
-            <SearchTable filter={globalFilter} setFilter={setGlobalFilter}/>
-            <table {...getTableProps()}>
+            
+            { !loading && (
+                <>
+                <table {...getTableProps()}>
                 <thead>
                 {// Loop over the header rows
                 headerGroups.map(headerGroup => (
@@ -138,7 +147,7 @@ export const Home = () => {
                 ))}
                 </thead>
                 {/* Apply the table body props */}
-                <tbody {...getTableBodyProps()}>
+                { paginate ? (<tbody {...getTableBodyProps()}>
                 {// Loop over the table rows
                     page.map(row => {
                     // Prepare the row for display
@@ -159,30 +168,63 @@ export const Home = () => {
                     </tr>
                     )
                 })}
-                </tbody>
+                </tbody>):(<tbody {...getTableBodyProps()}>
+                {// Loop over the table rows
+                    rows.map(row => {
+                    // Prepare the row for display
+                    prepareRow(row)
+                    return (
+                    // Apply the row props
+                    <tr {...row.getRowProps()}>
+                        {// Loop over the rows cells
+                        row.cells.map(cell => {
+                        // Apply the cell props
+                        return (
+                            <td {...cell.getCellProps()}>
+                            {// Render the cell contents
+                            cell.render('Cell')}
+                            </td>
+                        )
+                        })}
+                    </tr>
+                    )
+                })}
+                </tbody>)}
+                
             </table>
-        < div className="pagination">
-            <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
-            {'<<'}
-            </button>{' '}
-            <button onClick={() => previousPage()} disabled={!canPreviousPage}>
-            {'<'}
-            </button>{' '}
-            <button onClick={() => nextPage()} disabled={!canNextPage}>
-            {'>'}
-            </button>{' '}
-            <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
-            {'>>'}
-            </button>{' '}
-            <span>
-            Page{' '}
-            <strong>
-                {pageIndex + 1} of {pageOptions.length}
-            </strong>{' '}
-            </span>
-        </div>
-            
+            { showPagination && (< div className="pagination">
+                <button onClick={() => gotoPage(0)} disabled={!canPreviousPage}>
+                {'<<'}
+                </button>{' '}
+                <button onClick={() => previousPage()} disabled={!canPreviousPage}>
+                {'<'}
+                </button>{' '}
+                <button onClick={() => nextPage()} disabled={!canNextPage}>
+                {'>'}
+                </button>{' '}
+                <button onClick={() => gotoPage(pageCount - 1)} disabled={!canNextPage}>
+                {'>>'}
+                </button>{' '}
+                <span>
+                Page{' '}
+                <strong>
+                    {pageIndex + 1} of {pageOptions.length}
+                </strong>{' '}
+                </span>
+            </div>)}
+             
+            </>
+            )}      
         </div>
     )
 }
 
+// const firstEvent = (e) => {
+	// 	//console.log(e);
+	// 	var bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 50;
+	// 	if(bottom){
+	// 		let pg = pageNo + 1;
+	// 		setPageNo(pg);
+	// 		getData();
+	// 	}
+	// }
