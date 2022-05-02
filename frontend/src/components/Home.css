@@ -38,19 +38,27 @@
 .column-selection-search .column-selection .dropdown-check-list .dropdown {
   position: relative;
   display: flex;
+  align-items: center;
 }
 .column-selection-search .column-selection .dropdown-check-list {
     display: flex;
     justify-content: space-between;
 }
-
+.column-selection-search .column-selection .dropdown-check-list .dropdown-item-1 {
+    display: flex;
+    height: 30px;
+    align-items: center;
+}
 .column-selection-search .column-selection .dropdown-check-list .text-icon{
     display: flex;
     justify-content: space-between;
     align-items: center;
     border-style: solid;
     border-width: 1px; 
-    border-radius: 10px;
+    font-size: small;
+    border-radius: 5px;
+    width: 250px;
+    height: 30px;
 }
 
 .column-selection-search .column-selection .dropdown-check-list  .dropdown-item-2 div {

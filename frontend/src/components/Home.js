@@ -36,11 +36,12 @@ export const Home = () => {
 
 	const columns = useMemo(() => Columns, []);
     const data = useMemo(() => records, [records]);
+    
 
     const tableInstance = useTable({
         columns,
         data,
-        initialState: { pageIndex: 0, pageSize: 5 },
+        initialState: { pageIndex: 0, pageSize: 50 },
     }, useGlobalFilter,useSortBy,usePagination)
 
     const {
@@ -58,12 +59,13 @@ export const Home = () => {
         nextPage,
         previousPage,
         setGlobalFilter,
+        preGlobalFilteredRows,
         state,
         allColumns
     } = tableInstance;
 
     const { globalFilter, pageIndex } = state;
-
+    
     return (
         <div className="home-container">
             <div className='header-title'>
@@ -88,16 +90,14 @@ export const Home = () => {
                 <h5>Yes</h5>
             </div> 
             <div className='results-display'>
-                <h5>Displaying {records.length} results</h5>
+                <h5>Displaying results</h5>
                 <button>Reset Filters</button>
             </div>
             <div className='column-selection-search'>
                 <div className='column-selection'>
                     <div className="dropdown-check-list">
                         <div className='dropdown'>
-                            <div className='dropdown-item-1'>
-                                <button> Show all columns</button>
-                            </div>
+                            <button className='dropdown-item-1'> Show all columns</button>
                             <span className='dropdown-item-2' >
                                 {allColumns.map(column => (
                                 <div key={column.id}>
@@ -108,16 +108,15 @@ export const Home = () => {
                                 </div>
                                 ))}
                             </span>
-                            <br />
                         </div>
                         <div className="text-icon">
-                            <h5>6 of 6 selected </h5>
+                            <p>6 of 6 selected </p>
                             <ArrowDropDownIcon className='dropdown-icon' />
                         </div>
                         
                     </div>
                 </div>
-                <SearchTable className="search-icon"filter={globalFilter} setFilter={setGlobalFilter}/>
+                <SearchTable className="search-icon" filter={globalFilter} setFilter={setGlobalFilter} preGlobalFilteredRows={preGlobalFilteredRows}/>
             </div>
             
             { !loading && (
@@ -218,13 +217,3 @@ export const Home = () => {
         </div>
     )
 }
-
-// const firstEvent = (e) => {
-	// 	//console.log(e);
-	// 	var bottom = e.target.scrollHeight - e.target.scrollTop - e.target.clientHeight < 50;
-	// 	if(bottom){
-	// 		let pg = pageNo + 1;
-	// 		setPageNo(pg);
-	// 		getData();
-	// 	}
-	// }
