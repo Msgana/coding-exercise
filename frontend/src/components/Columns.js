@@ -32,34 +32,6 @@ export const Columns = [
         accessor: 'userId'
     },
     {
-        Header: 'is deleted?',
-        accessor: 'isdeleted'
-    },
-    {
-        Header: 'Profile Picture',
-        accessor: 'profilepicture'
-    },
-    {
-        Header: 'Video url',
-        accessor: 'videoUrl'
-    },
-    {
-        Header: 'Images',
-        accessor: 'images'
-    },
-    {
-        Header: 'Mediatype',
-        accessor: 'mediatype'
-    },
-    {
-        Header: 'Image Path',
-        accessor: 'imagePaths'
-    },
-    {
-        Header: 'Feeds Comment',
-        accessor: 'feedsComment'
-    },
-    {
         Header: 'Comment Count',
         accessor: 'commentCount'
     },

@@ -9,7 +9,12 @@ import axios from 'axios'
 
 
 export const Home = () => {
+
+    const [start,setStart] = useState(0);
+    const [end, setEnd] =useState(50);
+    const offset = 50;
     const [records, setRecords] = useState([]);
+    const [filteredData, setFilteredData] = useState([]);
     const [loading, setLoading] = useState(true);
     const [paginate, setPaginate] = useState(false);
     const [showPagination, setShowPagination] = useState(false);
@@ -18,6 +23,8 @@ export const Home = () => {
 		await axios.get(`http://localhost:3001/`)
 			.then(response => { 
                 setRecords(response.data)
+                setFilteredData(Object.values(records).slice(0,50));
+                 console.log("you're at the bottom of the page", filteredData)
                 setLoading(false);
 			})
 			.catch(error => {
@@ -34,14 +41,33 @@ export const Home = () => {
 		getData();
 	},[]);
 
+    useEffect(() => {
+        const onScroll = function () {
+            if (window.innerHeight + window.scrollY >= document.body.offsetHeight) {
+                setStart(start + offset);
+                setEnd(end + offset);
+                console.log(start, end)
+
+                if(end < records.length){
+                    setFilteredData(Object.keys(records).slice(start,end));
+                    console.log("you're at the bottom of the page", filteredData)
+                }
+                
+            }
+        }
+        window.addEventListener('scroll', onScroll)
+        return () => window.removeEventListener('scroll', onScroll)
+    }, [])
+
+
 	const columns = useMemo(() => Columns, []);
     const data = useMemo(() => records, [records]);
+    //const data = useMemo(() => filteredData, [filteredData]);
     
-
     const tableInstance = useTable({
         columns,
         data,
-        initialState: { pageIndex: 0, pageSize: 50 },
+        initialState: { pageIndex: 0, pageSize: 50 }, sortBy:[{ id: 'id', desc: false }],
     }, useGlobalFilter,useSortBy,usePagination)
 
     const {
@@ -61,15 +87,17 @@ export const Home = () => {
         setGlobalFilter,
         preGlobalFilteredRows,
         state,
-        allColumns
+        allColumns,
+        visibleColumns
     } = tableInstance;
 
     const { globalFilter, pageIndex } = state;
-    
+
+
     return (
         <div className="home-container">
             <div className='header-title'>
-                <h2>8-bit PIC MCU Products </h2> 
+                <h2>Coding Challenge</h2> 
             </div>
             <div className='product-view-mode'>
                 <div className='product-view-mode-left'>
@@ -90,8 +118,14 @@ export const Home = () => {
                 <h5>Yes</h5>
             </div> 
             <div className='results-display'>
-                <h5>Displaying results</h5>
+                <div className='left-item'>
+                    <ArrowDropDownIcon />
+                    <h5>Search Filters</h5>
+                </div>
+                <div className='right-item'>
+                    <h5>Displaying {rows.length} results</h5>
                 <button>Reset Filters</button>
+                </div>
             </div>
             <div className='column-selection-search'>
                 <div className='column-selection'>
@@ -103,17 +137,16 @@ export const Home = () => {
                                 <div key={column.id}>
                                     <label>
                                         <input type="checkbox" {...column.getToggleHiddenProps()} />{' '}
-                                        {column.id}
+                                        {column.Header}
                                     </label>
                                 </div>
                                 ))}
                             </span>
-                        </div>
-                        <div className="text-icon">
-                            <p>6 of 6 selected </p>
+                         <span className="text-icon">
+                            <p>  {visibleColumns.length} of {Columns.length } selected </p>
                             <ArrowDropDownIcon className='dropdown-icon' />
-                        </div>
-                        
+                        </span>
+                        </div> 
                     </div>
                 </div>
                 <SearchTable className="search-icon" filter={globalFilter} setFilter={setGlobalFilter} preGlobalFilteredRows={preGlobalFilteredRows}/>
@@ -177,10 +210,11 @@ export const Home = () => {
                     <tr {...row.getRowProps()}>
                         {// Loop over the rows cells
                         row.cells.map(cell => {
+    
                         // Apply the cell props
                         return (
                             <td {...cell.getCellProps()}>
-                            {// Render the cell contents
+                            {// Render the cell content
                             cell.render('Cell')}
                             </td>
                         )

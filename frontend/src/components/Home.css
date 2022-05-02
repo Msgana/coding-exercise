@@ -1,3 +1,11 @@
+h2 {
+    font-weight: normal;
+}
+
+h5 {
+    font-weight: normal;
+}
+
 .product-view-mode {
     display: flex;
     justify-content: space-between;
@@ -22,7 +30,19 @@
 }
 .results-display{
     display: flex;
-    justify-content: flex-end;
+    justify-content: space-between;
+    align-items: center;
+    background-color:aliceblue;
+}
+.results-display .left-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+.results-display .right-item {
+    display: flex;
+    justify-content: space-between;
     align-items: center;
 }
 
@@ -68,16 +88,22 @@
   display: block;
 }
 
-
+.column-selection-search .column-selection .dropdown-check-list  .dropdown .text-icon:hover {
+  background-color: rgb(0, 225, 255);  
+  color: #f9f9f9;
+}
 .column-selection-search .column-selection .dropdown-check-list  .dropdown:hover .dropdown-item-2 {
   display: block;
+  margin-left: 120px;
+  margin-top: 550px;
+  
 }
 
 .column-selection-search .column-selection .dropdown-check-list  .dropdown .dropdown-item-2 {
   display: none;
   position: absolute;
   background-color: #f9f9f9;
-  min-width: 100%;
+  min-width: 250px;
   box-shadow: 0px 8px 16px 0px rgba(0,0,0,0.2);
   padding: 12px 16px;
   z-index: 1;
@@ -89,7 +115,10 @@
     align-items: center;
 
 }
-
+.column-selection-search .search-box svg {
+    color: #f9f9f9;
+    background-color:#0c0c7c;
+}
 table {
     border-spacing: 0;
     
@@ -98,3 +127,31 @@ table {
 table thead {
     background-color: rgb(0, 225, 255);
 }
+
+table thead tr th {
+    font-size: 11px;
+    text-align: center;
+    font-weight: normal;
+    min-width: 80px;
+}
+
+table tbody tr td {
+    font-size: 10px;
+    text-align: center;
+    font-weight: normal;
+}
+
+#table {
+  font-family: Arial, Helvetica, sans-serif;
+  border-collapse: collapse;
+  width: 100%;
+}
+
+table td, table th {
+  padding: 8px;
+}
+
+table tbody tr:nth-child(even){background-color: #f2f2f2;}
+
+
+table tbody tr:hover {background-color: #ddd;}
