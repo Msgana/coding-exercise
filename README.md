@@ -7,7 +7,7 @@ The data will be loaded from a node js backend api to the frontend react js web 
 ## Project content:
 
     ### Frontend:   
-        ReactJs, ReactTable, Axios, Material UI icons and API
+        ReactJs, ReactTable, Axios, Material UI icons 
     ### Backend: 
         Node JS, Express, Nodemon, Cors 
 
